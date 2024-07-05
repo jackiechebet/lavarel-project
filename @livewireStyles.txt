@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Gemini App</title>
+        @livewireStyles
+    </head>
+    <body>
+        @livewire('chat')
+        @livewireScripts
+    </body>
+</html>
+

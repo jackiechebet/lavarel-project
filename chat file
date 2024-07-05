@@ -1,0 +1,31 @@
+namespace App\Http\Livewire;
+
+use Livewire\Component;
+use Illuminate\Support\Facades\Http;
+
+class Chat extends Component
+{
+    public $message;
+    public $response;
+    public $messages = [];
+
+    public function sendMessage()
+    {
+        $this->messages[] = ['user' => 'You', 'message' => $this->message];
+        
+        $response = Http::post('https://api.gemini.com/chat', [
+            'message' => $this->message,
+            'user_id' => auth()->id(),
+        ]);
+
+        $this->response = $response->json();
+        $this->messages[] = ['user' => 'Gemini', 'message' => $this->response['message']];
+
+        $this->message = '';
+    }
+
+    public function render()
+    {
+        return view('livewire.chat');
+    }
+}

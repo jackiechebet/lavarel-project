@@ -1,0 +1,48 @@
+<?php
+
+namespace App\Services;
+
+use GuzzleHttp\Client;
+
+class GeminiClient
+{
+    protected $client;
+    protected $apiKey;
+    protected $apiSecret;
+
+    public function __construct()
+    {
+        $this->client = new \GuzzleHttp\Client(['base_uri' => 'https://api.gemini.com/v1/']);
+        $this->apiKey = env('GEMINI_API_KEY');
+        $this->apiSecret = env('GEMINI_API_SECRET');
+    }
+
+    public function getAccountInfo()
+    {
+        $endpoint = 'account';
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    protected function makeRequest($method, $endpoint, $params = [])
+    {
+        $nonce = time();
+        $payload = base64_encode(json_encode([
+            'request' => "/v1/$endpoint",
+            'nonce' => $nonce
+        ]));
+
+        $signature = hash_hmac('sha384', $payload, $this->apiSecret);
+
+        $response = $this->client->request($method, $endpoint, [
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'X-GEMINI-APIKEY' => $this->apiKey,
+                'X-GEMINI-PAYLOAD' => $payload,
+                'X-GEMINI-SIGNATURE' => $signature,
+            ],
+            'json' => $params
+        ]);
+
+        return json_decode($response->getBody(), true);
+    }
+}
